@@ -1,0 +1,59 @@
+#!/usr/bin/env python -u
+
+from filewatch import tail
+import argparse
+import atexit
+import logging
+import os
+import sys
+
+
+def run(config, args):
+    t = tail.Tail(config)
+    for path in args.paths:
+        t.tail(path)
+
+    def cleanup():
+        t.sincedb_write('glob tail exiting')
+
+    atexit.register(cleanup)
+
+    def func(path, line):
+        print "{0}: {1}".format(path, line)
+
+    t.subscribe(func)
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('paths', metavar='path/glob', nargs='+')
+    parser.add_argument('-v', '--verbose', action='store_true',
+                        default=False, help='Enable verbose/debug output')
+    parser.add_argument('-x', '--exclude', action='append',
+                        help='path to exclude from watching')
+    parser.add_argument('-s', '--sincedb', metavar="PATH", default=None,
+                        help='Sincedb path')
+    parser.add_argument('-i', '--interval', metavar='SECONDS', type=int,
+                        default=-1, help='Sincedb write interval')
+
+    args = parser.parse_args()
+
+    config = {}
+
+    loglevel = logging.DEBUG if args.verbose else logging.INFO
+    logging.basicConfig(level=loglevel)
+    log = logging.getLogger(os.path.basename(sys.argv[0]))
+    config['logger'] = log
+
+    config['exclude'] = args.exclude
+
+    if args.sincedb:
+        config['sincedb_path'] = args.sincedb
+
+    if args.interval > 0:
+        config['sincedb_write_interval'] = args.interval
+
+    run(config, args)
+
+if __name__ == '__main__':
+    main()
