@@ -22,9 +22,7 @@ setup(
     ],
     classifiers=[],
     entry_points={
-        'console_scripts': ['cassandra_compaction_reporter = cassandra_compaction_reporter.cassandra_compaction_reporter:main'],
-        'setuptools.installation': ['eggsecutable = cassandra_compaction_reporter.cassandra_compaction_reporter:main'],
     },
 
-    url='http://github.com/signalfx/cassandra_compaction_reporter',
+    url='http://github.com/signalfx/pyfilewatch',
 )
